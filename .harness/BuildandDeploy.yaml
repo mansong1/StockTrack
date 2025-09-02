@@ -43,6 +43,14 @@ pipeline:
                       spec:
                         paths:
                           - "**/*.xml"
+              - step:
+                  type: ArtifactoryUpload
+                  name: ArtifactoryUpload
+                  identifier: ArtifactoryUpload
+                  spec:
+                    connectorRef: account.Artifactory
+                    target: stocktrack-maven-local/com/stocktrack/stocktrack/1.0.<+pipeline.sequenceId>/stocktrack-1.0.<+pipeline.sequenceId>.jar
+                    sourcePath: app/target/stocktrack-1.0.<+pipeline.sequenceId>.jar
           buildIntelligence:
             enabled: true
           platform:
