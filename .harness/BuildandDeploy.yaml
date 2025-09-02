@@ -16,14 +16,6 @@ pipeline:
             enabled: true
             override: true
             paths: []
-          infrastructure:
-            type: KubernetesDirect
-            spec:
-              connectorRef: account.bofaeks
-              namespace: default
-              automountServiceAccountToken: true
-              nodeSelector: {}
-              os: Linux
           execution:
             steps:
               - step:
@@ -53,6 +45,13 @@ pipeline:
                           - "**/*.xml"
           buildIntelligence:
             enabled: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec:
+              size: large
     - stage:
         name: Deploy
         identifier: Deploy
