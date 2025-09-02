@@ -15,6 +15,7 @@ pipeline:
           caching:
             enabled: true
             override: true
+            paths: []
           infrastructure:
             type: KubernetesDirect
             spec:
@@ -45,6 +46,13 @@ pipeline:
                       JAR="$(ls target/*-SNAPSHOT.jar target/*.jar 2>/dev/null | head -n1)"
                       test -n "$JAR"
                       mkdir -p /harness/out && cp "$JAR" /harness/out/stocktrack.jar
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - "**/*.xml"
+          buildIntelligence:
+            enabled: true
     - stage:
         name: Deploy
         identifier: Deploy
