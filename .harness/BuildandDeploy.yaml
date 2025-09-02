@@ -103,7 +103,7 @@ pipeline:
                         - identifier: stocktrack
                           type: ArtifactoryRegistry
                           spec:
-                            artifactPath: 1.0.54/stocktrack-1.0.54.jar
+                            artifactPath: stocktrack-1.0.54.jar
           execution:
             steps:
               - step:
