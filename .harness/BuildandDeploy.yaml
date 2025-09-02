@@ -112,6 +112,20 @@ pipeline:
                   type: FetchInstanceScript
                   timeout: 10m
                   spec: {}
+              - step:
+                  type: ShellScript
+                  name: echo
+                  identifier: echo
+                  spec:
+                    shell: Bash
+                    executionTarget: {}
+                    source:
+                      type: Inline
+                      spec:
+                        script: echo <+artifacts.primary.artifactPath>
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 10m
               - stepGroup:
                   name: Deploy
                   identifier: Deploy
