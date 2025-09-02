@@ -61,8 +61,7 @@ pipeline:
                       domain: https://sonar.harness.io/
                       ssl: true
                     tool:
-                      java:
-                        binaries: "**/*.java"
+                      exclude: "**/*.java"
                       project_key: stocktrack
               - step:
                   type: ArtifactoryUpload
