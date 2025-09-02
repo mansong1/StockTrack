@@ -19,8 +19,13 @@
 
     <properties>
         <java.version>17</java.version>
-        <!-- Default revision; can be overridden via -Drevision or Harness env profile -->
-        <revision>0.0.1-SNAPSHOT</revision>
+        <!-- Primary build inputs (overridable from CI): -->
+        <build.version>0.0.1-SNAPSHOT</build.version>
+        <build.sequence>unknown</build.sequence>
+        <!-- Default to git short sha if not provided explicitly -->
+        <build.commit>${git.commit.id.abbrev}</build.commit>
+        <!-- Project version comes from build.version -->
+        <revision>${build.version}</revision>
     </properties>
 
     <dependencies>
@@ -91,7 +96,7 @@
         </plugins>
     </build>
 
-    <!-- If HARNESS_SEQUENCE_ID is present in the environment, use it to set the artifact version -->
+    <!-- Optional: If HARNESS_SEQUENCE_ID is present, set build.version and build.sequence automatically -->
     <profiles>
         <profile>
             <id>harness-sequence-version</id>
@@ -101,7 +106,8 @@
                 </property>
             </activation>
             <properties>
-                <revision>0.0.${env.HARNESS_SEQUENCE_ID}</revision>
+                <build.version>1.0.${env.HARNESS_SEQUENCE_ID}</build.version>
+                <build.sequence>${env.HARNESS_SEQUENCE_ID}</build.sequence>
             </properties>
         </profile>
     </profiles>
