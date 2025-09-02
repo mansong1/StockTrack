@@ -1,0 +1,140 @@
+pipeline:
+  name: Build and Deploy
+  identifier: Deploy
+  projectIdentifier: Martin
+  orgIdentifier: default
+  tags: {}
+  stages:
+    - stage:
+        name: Build
+        identifier: Build
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: account.bofaeks
+              namespace: default
+              automountServiceAccountToken: true
+              nodeSelector: {}
+              os: Linux
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Build and Test
+                  identifier: Build_and_Test
+                  spec:
+                    connectorRef: account.dockerhub
+                    image: maven:3.9.6-eclipse-temurin-17
+                    shell: Bash
+                    command: |-
+                      set -e
+                      cd app
+                      BUILD_VERSION="1.0.<+pipeline.sequenceId>"
+                      mvn -B -q \
+                        -Dbuild.version="${BUILD_VERSION}" \
+                        -Dbuild.sequence="<+pipeline.sequenceId>" \
+                        -Dbuild.commit="<+codebase.commitSha>" \
+                        clean package
+                      JAR="$(ls target/*-SNAPSHOT.jar target/*.jar 2>/dev/null | head -n1)"
+                      test -n "$JAR"
+                      mkdir -p /harness/out && cp "$JAR" /harness/out/stocktrack.jar
+    - stage:
+        name: Deploy
+        identifier: Deploy
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: CustomDeployment
+          customDeploymentRef:
+            templateRef: Ansible
+            versionLabel: v1.0
+          service:
+            serviceRef: ansible
+          execution:
+            steps:
+              - step:
+                  name: Fetch Instances
+                  identifier: fetchInstances
+                  type: FetchInstanceScript
+                  timeout: 10m
+                  spec: {}
+              - stepGroup:
+                  name: Deploy
+                  identifier: Deploy
+                  steps:
+                    - step:
+                        name: Ping Targets
+                        identifier: Ping_Targets
+                        template:
+                          templateRef: Ansible_Ping_Targets
+                          versionLabel: v0.1
+                    - step:
+                        name: Run Playbook
+                        identifier: Run_Playbook
+                        template:
+                          templateRef: Ansible_Run_Playbook
+                          versionLabel: v0.1
+                          templateInputs:
+                            type: ShellScript
+                            spec:
+                              environmentVariables:
+                                - name: playbook_path
+                                  type: String
+                                  value: <+input>
+                                - name: artifact_url
+                                  type: String
+                                  value: <+artifact.path>
+                                - name: dest_path
+                                  type: String
+                                  value: <+input>
+            rollbackSteps: []
+          environment:
+            environmentRef: DEV
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: CIT1
+                inputs:
+                  identifier: CIT1
+                  type: CustomDeployment
+                  spec:
+                    variables:
+                      - name: GIT_URL
+                        type: String
+                        value: <+input>
+                      - name: GIT_REF
+                        type: String
+                        value: <+input>
+                      - name: INV_PATH
+                        type: String
+                        value: <+input>
+                      - name: GROUP_FILTER
+                        type: String
+                        value: <+input>
+                      - name: ANSIBLE_USER
+                        type: String
+                        value: <+input>
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
+        delegateSelectors:
+          - bofa
+        when:
+          pipelineStatus: Success
+          condition: "false"
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.Github
+        repoName: StockTrack
+        build: <+input>
