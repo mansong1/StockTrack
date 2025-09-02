@@ -52,7 +52,10 @@ pipeline:
                     image: polymathrobotics/jfrog-cli:latest
                     shell: Sh
                     command: |-
-                      jf rt c stocktrack --url "$HOST" --user harness-ci --password "$PASS" --interactive=false
+                      export JFROG_URL="$HOST"
+                      export JFROG_USER="harness-ci"                     # or omit if using token
+                      export JFROG_PASSWORD="$PASS" 
+
                       jf rt u --flat=true "app/target/stocktrack-1.0.<+pipeline.sequenceId>.jar" \
                         "stocktrack-maven-local/com/stocktrack/stocktrack/1.0.<+pipeline.sequenceId>/stocktrack-1.0.<+pipeline.sequenceId>.jar" \
                         --build-name StockTrack --build-number <+pipeline.sequenceId>
