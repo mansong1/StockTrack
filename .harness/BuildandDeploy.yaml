@@ -126,6 +126,7 @@ pipeline:
                           echo <+artifacts.primary.artifactPath>
                           echo <+artifacts.primary.artifactDirectory>
                           echo <+artifacts.primary.repositoryName>
+                          echo <+artifacts.primary.metadata.url>
                     environmentVariables: []
                     outputVariables: []
                   timeout: 10m
