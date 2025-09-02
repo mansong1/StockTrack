@@ -1,0 +1,58 @@
+inputSet:
+  name: cit1
+  tags: {}
+  identifier: cit1
+  orgIdentifier: default
+  projectIdentifier: Martin
+  pipeline:
+    identifier: Deploy
+    stages:
+      - stage:
+          identifier: Deploy
+          type: Deployment
+          spec:
+            execution:
+              steps:
+                - stepGroup:
+                    identifier: Deploy
+                    steps:
+                      - step:
+                          identifier: Run_Playbook
+                          template:
+                            templateInputs:
+                              type: ShellScript
+                              spec:
+                                environmentVariables:
+                                  - name: playbook_path
+                                    type: String
+                                    value: test
+                                  - name: dest_path
+                                    type: String
+                                    value: test
+            environment:
+              infrastructureDefinitions:
+                - identifier: CIT1
+                  inputs:
+                    identifier: CIT1
+                    type: CustomDeployment
+                    spec:
+                      variables:
+                        - name: GIT_URL
+                          type: String
+                          value: https://github.com/mansong1/ansible_demo.git
+                        - name: GIT_REF
+                          type: String
+                          value: master
+                        - name: INV_PATH
+                          type: String
+                          value: inventory.ini
+                        - name: GROUP_FILTER
+                          type: String
+                          value: all
+                        - name: ANSIBLE_USER
+                          type: String
+                          value: ec2-user
+    properties:
+      ci:
+        codebase:
+          build: <+input>
