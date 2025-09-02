@@ -44,25 +44,6 @@ pipeline:
                         paths:
                           - "**/*.xml"
               - step:
-                  type: Run
-                  name: jfcli
-                  identifier: jfcli
-                  spec:
-                    connectorRef: account.dockerhub
-                    image: polymathrobotics/jfrog-cli:latest
-                    shell: Sh
-                    command: |-
-                      export JFROG_URL="$HOST"
-                      export JFROG_USER="harness-ci"                     # or omit if using token
-                      export JFROG_PASSWORD="$PASS" 
-
-                      jf rt u --flat=true "app/target/stocktrack-1.0.<+pipeline.sequenceId>.jar" \
-                        "stocktrack-maven-local/com/stocktrack/stocktrack/1.0.<+pipeline.sequenceId>/stocktrack-1.0.<+pipeline.sequenceId>.jar" \
-                        --build-name StockTrack --build-number <+pipeline.sequenceId>
-                    envVariables:
-                      HOST: http://ad04c0ba5c45546a78ee9c4dd37d194f-1597541840.eu-west-1.elb.amazonaws.com/ui
-                      PASS: <+input>
-              - step:
                   type: ArtifactoryUpload
                   name: ArtifactoryUpload
                   identifier: ArtifactoryUpload
