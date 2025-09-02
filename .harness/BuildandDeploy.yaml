@@ -122,7 +122,10 @@ pipeline:
                     source:
                       type: Inline
                       spec:
-                        script: echo <+artifacts.primary.artifactPath>
+                        script: |-
+                          echo <+artifacts.primary.artifactPath>
+                          echo <+artifacts.primary.artifactDirectory>
+                          echo <+artifacts.primary.repositoryName>
                     environmentVariables: []
                     outputVariables: []
                   timeout: 10m
