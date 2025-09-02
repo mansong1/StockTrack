@@ -91,7 +91,19 @@ pipeline:
             templateRef: Ansible
             versionLabel: v1.0
           service:
-            serviceRef: ansible
+            serviceRef: stocktrack
+            serviceInputs:
+              serviceDefinition:
+                type: CustomDeployment
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: stocktrack
+                      sources:
+                        - identifier: stocktrack
+                          type: ArtifactoryRegistry
+                          spec:
+                            artifactPath: 1.0.54/stocktrack-1.0.54.jar
           execution:
             steps:
               - step:
