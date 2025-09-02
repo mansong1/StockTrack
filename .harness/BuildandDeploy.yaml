@@ -166,7 +166,6 @@ pipeline:
           - bofa
         when:
           pipelineStatus: Success
-          condition: "false"
   properties:
     ci:
       codebase:
