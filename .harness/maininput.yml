@@ -1,0 +1,14 @@
+inputSet:
+  pipeline:
+    identifier: Deploy
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: main
+  name: main
+  identifier: main
+  orgIdentifier: default
+  projectIdentifier: Martin
