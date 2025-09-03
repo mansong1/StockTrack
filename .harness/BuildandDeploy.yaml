@@ -98,7 +98,6 @@ pipeline:
                 spec:
                   artifacts:
                     primary:
-                      primaryArtifactRef: stocktrack
                       sources:
                         - identifier: stocktrack
                           type: ArtifactoryRegistry
