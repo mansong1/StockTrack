@@ -160,30 +160,30 @@ pipeline:
                                   value: <+input>
             rollbackSteps: []
           environment:
-            environmentRef: DEV
+            environmentRef: CIT1
             deployToAll: false
             infrastructureDefinitions:
-              - identifier: CIT1
+              - identifier: linux
                 inputs:
-                  identifier: CIT1
+                  identifier: linux
                   type: CustomDeployment
                   spec:
                     variables:
                       - name: GIT_URL
                         type: String
-                        value: <+input>
+                        value: https://github.com/mansong1/ansible_demo.git
                       - name: GIT_REF
                         type: String
-                        value: <+input>
+                        value: master
                       - name: INV_PATH
                         type: String
-                        value: <+input>
+                        value: inventory.ini
                       - name: GROUP_FILTER
                         type: String
-                        value: <+input>
+                        value: all
                       - name: ANSIBLE_USER
                         type: String
-                        value: <+input>
+                        value: ec2-user
         tags: {}
         failureStrategies:
           - onFailure:
