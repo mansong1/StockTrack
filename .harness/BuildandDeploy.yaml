@@ -111,6 +111,49 @@ pipeline:
                   type: FetchInstanceScript
                   timeout: 10m
                   spec: {}
+              - step:
+                  type: ShellScript
+                  name: Ping
+                  identifier: Ping
+                  spec:
+                    shell: Bash
+                    executionTarget: {}
+                    source:
+                      type: Inline
+                      spec:
+                        script: |-
+                          set -euo pipefail
+
+                          echo "DEBUG: stage.output.hosts"
+                          echo '<+json.format(<+stage.output.hosts>)>'
+
+                          WORKDIR="$(mktemp -d)"; trap 'rm -rf "$WORKDIR"' EXIT
+                          cd "$WORKDIR"
+
+                          # 1) Dump stage output array to JSON
+                          echo '<+json.format(<+stage.output.hosts>)>' > hosts.json
+
+                          # 2) Build temporary inventory (works for objects or strings)
+                          {
+                              echo "[targets]"
+                              jq -r '(. // []) 
+                                      | map( if type=="string" then {ip: .} else . end )
+                                      | .[] 
+                                      | select(.ip != null) 
+                                      | "\(.ip) ansible_user=\(.ansible_user // "<+infra.variables.ansible_user>") ansible_ssh_common_args='\''-o StrictHostKeyChecking=no'\''"' hosts.json
+                          } > hosts.ini
+
+                          echo "Inventory built:"
+                          cat hosts.ini
+
+                          # 3) Run Ansible ping
+                          echo "Pinging targets..."
+                          ansible -i hosts.ini targets -m ping -o -T 5 --forks 20
+
+                          echo "Ping step complete."
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 10m
               - stepGroup:
                   name: Deploy
                   identifier: Deploy
