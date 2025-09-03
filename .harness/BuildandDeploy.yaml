@@ -3,7 +3,8 @@ pipeline:
   identifier: Deploy
   projectIdentifier: Martin
   orgIdentifier: default
-  tags: {}
+  tags:
+    ai_generated: "true"
   stages:
     - stage:
         name: Build
@@ -176,3 +177,4 @@ pipeline:
         build: <+input>
   allowStageExecutions: true
   fixedInputsOnRerun: true
+  description: This pipeline was updated by Harness AI on 2025-09-03 17:46:15 UTC by martin.ansong@harness.io.
