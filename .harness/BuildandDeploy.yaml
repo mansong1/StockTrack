@@ -201,3 +201,5 @@ pipeline:
         connectorRef: account.Github
         repoName: StockTrack
         build: <+input>
+  allowStageExecutions: true
+  fixedInputsOnRerun: true
