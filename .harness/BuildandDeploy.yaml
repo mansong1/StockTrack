@@ -126,11 +126,11 @@ pipeline:
                           type: String
                           value: inventory.ini
                         - name: machinecredentials
-                          type: String
-                          value: ""
+                          type: Secret
+                          value: account.pem
                         - name: artifact_url
                           type: String
-                          value: ""
+                          value: <+pipeline.stages.Deploy.spec.artifacts.primary.metadata.url>
             rollbackSteps: []
           environment:
             environmentRef: CIT1
