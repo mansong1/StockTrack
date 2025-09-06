@@ -3,7 +3,8 @@ pipeline:
   identifier: Deploy
   projectIdentifier: Martin
   orgIdentifier: default
-  tags: {}
+  tags:
+    ai_generated: "true"
   stages:
     - stage:
         name: Build
@@ -44,12 +45,32 @@ pipeline:
                         paths:
                           - "**/*.xml"
               - step:
+                  type: Sonarqube
+                  name: Sonarqube
+                  identifier: Sonarqube
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: repository
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                    auth:
+                      access_token: <+secrets.getValue('sonartoken')>
+                      domain: https://sonar.harness.io/
+                      ssl: true
+                    tool:
+                      exclude: "**/*.java"
+                      project_key: stocktrack
+              - step:
                   type: ArtifactoryUpload
                   name: ArtifactoryUpload
                   identifier: ArtifactoryUpload
                   spec:
                     connectorRef: account.Artifactory
-                    target: stocktrack-maven-local/com/stocktrack/stocktrack/1.0.<+pipeline.sequenceId>/stocktrack-1.0.<+pipeline.sequenceId>.jar
+                    target: stocktrack-libs-release-local/com/stocktrack/stocktrack/1.0.<+pipeline.sequenceId>/stocktrack-1.0.<+pipeline.sequenceId>.jar
                     sourcePath: app/target/stocktrack-1.0.<+pipeline.sequenceId>.jar
           buildIntelligence:
             enabled: true
@@ -71,7 +92,18 @@ pipeline:
             templateRef: Ansible
             versionLabel: v1.0
           service:
-            serviceRef: ansible
+            serviceRef: stocktrack
+            serviceInputs:
+              serviceDefinition:
+                type: CustomDeployment
+                spec:
+                  artifacts:
+                    primary:
+                      sources:
+                        - identifier: stocktrack
+                          type: ArtifactoryRegistry
+                          spec:
+                            artifactPath: <+input>
           execution:
             steps:
               - step:
@@ -81,60 +113,51 @@ pipeline:
                   timeout: 10m
                   spec: {}
               - stepGroup:
-                  name: Deploy
-                  identifier: Deploy
-                  steps:
-                    - step:
-                        name: Ping Targets
-                        identifier: Ping_Targets
-                        template:
-                          templateRef: Ansible_Ping_Targets
-                          versionLabel: v0.1
-                    - step:
-                        name: Run Playbook
-                        identifier: Run_Playbook
-                        template:
-                          templateRef: Ansible_Run_Playbook
-                          versionLabel: v0.1
-                          templateInputs:
-                            type: ShellScript
-                            spec:
-                              environmentVariables:
-                                - name: playbook_path
-                                  type: String
-                                  value: <+input>
-                                - name: artifact_url
-                                  type: String
-                                  value: <+artifact.path>
-                                - name: dest_path
-                                  type: String
-                                  value: <+input>
+                  name: Playbook
+                  identifier: Playbook
+                  template:
+                    templateRef: account.Ansible_Playbook
+                    versionLabel: v1.0
+                    templateInputs:
+                      variables:
+                        - name: playbook
+                          type: String
+                          value: download.yml
+                        - name: inventory
+                          type: String
+                          value: inventory.ini
+                        - name: machinecredentials
+                          type: Secret
+                          value: account.pem
+                        - name: artifact_url
+                          type: String
+                          value: <+pipeline.stages.Deploy.spec.artifacts.primary.metadata.url>
             rollbackSteps: []
           environment:
-            environmentRef: DEV
+            environmentRef: CIT1
             deployToAll: false
             infrastructureDefinitions:
-              - identifier: CIT1
+              - identifier: linux
                 inputs:
-                  identifier: CIT1
+                  identifier: linux
                   type: CustomDeployment
                   spec:
                     variables:
                       - name: GIT_URL
                         type: String
-                        value: <+input>
+                        value: https://github.com/mansong1/ansible_demo.git
                       - name: GIT_REF
                         type: String
-                        value: <+input>
+                        value: master
                       - name: INV_PATH
                         type: String
-                        value: <+input>
+                        value: inventory.ini
                       - name: GROUP_FILTER
                         type: String
-                        value: <+input>
+                        value: all
                       - name: ANSIBLE_USER
                         type: String
-                        value: <+input>
+                        value: ec2-user
         tags: {}
         failureStrategies:
           - onFailure:
@@ -146,10 +169,12 @@ pipeline:
           - bofa
         when:
           pipelineStatus: Success
-          condition: "false"
   properties:
     ci:
       codebase:
         connectorRef: account.Github
         repoName: StockTrack
         build: <+input>
+  allowStageExecutions: true
+  fixedInputsOnRerun: true
+  description: This pipeline was updated by Harness AI on 2025-09-03 17:46:15 UTC by martin.ansong@harness.io.
